@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.MintRankUserMapper">
+
+    <select id="selectRefereeAchieve" resultType="com.nft.cn.entity.MintRankUser">
+        select * from (SELECT t.*, CAST((@i:=@i+1) as signed) rank FROM (
+        SELECT user_id, user_address,
+        <if test="phase != null and phase == 1">
+            referee_paid_mint_num1 mint_num
+        </if>
+        <if test="phase != null and phase == 2">
+            referee_paid_mint_num2 mint_num
+        </if>
+        <if test="phase != null and phase == 3">
+            referee_paid_mint_num3 mint_num
+        </if>
+        <if test="phase != null and phase == 4">
+            referee_paid_mint_num4 mint_num
+        </if>
+        FROM mint_community_paid_achieve ORDER BY referee_paid_mint_num DESC) t, (SELECT @i:=0) b) aa
+        <where>
+            AND aa.mint_num &gt; #{achieve}
+            <if test="userAddress != null and userAddress != ''">
+                AND aa.`user_address` = #{userAddress}
+            </if>
+        </where>
+    </select>
+
+</mapper>

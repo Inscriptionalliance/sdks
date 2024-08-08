@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.UUserRefereeMapper">
+    <select id="getAllSubordinate" resultType="java.lang.String">
+        select user_address from u_user_referee where FIND_IN_SET(#{id},referee_relation) order by create_time asc
+    </select>
+
+
+    <select id="getAllSubordinateList" resultType="com.nft.cn.entity.UUserReferee">
+        select id, user_address, user_id, referee_user_id, referee_user_address, referee_num, income_status, create_time from u_user_referee where FIND_IN_SET(#{id},referee_relation) order by create_time asc
+    </select>
+
+    <select id="selectChildListByAddress" parameterType="java.lang.String" resultType="com.nft.cn.entity.UUserReferee">
+        select id, user_address, user_id, referee_user_id, referee_user_address, referee_num, income_status, create_time from u_user_referee where referee_user_address = #{userAddress}
+    </select>
+
+    <select id="selectChildListById" parameterType="java.lang.Long" resultType="com.nft.cn.entity.UUserReferee">
+        select id, user_address, user_id, referee_user_id, referee_user_address, referee_num, income_status, create_time from u_user_referee where referee_user_id = #{id}
+    </select>
+
+    <select id="listNoRelation" resultType="com.nft.cn.entity.UUserReferee">
+        select id, user_address, user_id, referee_user_id, referee_user_address, referee_num, income_status, create_time from u_user_referee
+    </select>
+
+    <select id="selectByUserAddress" parameterType="java.lang.String" resultType="com.nft.cn.entity.UUserReferee">
+        select id, user_address, user_id, referee_user_id, referee_user_address, referee_num, income_status, create_time from u_user_referee where user_address = #{userAddress}
+    </select>
+
+    <select id="listNoRelationByAddressList" resultType="com.nft.cn.entity.UUserReferee">
+        select id, user_address, user_id, referee_user_id, referee_user_address, referee_num, income_status, create_time from u_user_referee
+        <where>
+            <if test="list != null and list.size() > 0">
+                and user_address in
+                <foreach collection="list" item="userAddress" open="(" separator="," close=")">
+                    #{userAddress}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="getAllSubordinateNoOrder" resultType="com.nft.cn.entity.UUserReferee">
+        select id, user_address, user_id, referee_user_id, referee_user_address, referee_num, income_status, create_time from u_user_referee where FIND_IN_SET(#{id},referee_relation)
+    </select>
+
+    <select id="getAllSubordinateCount" resultType="java.lang.Long">
+        select COUNT(user_address) from u_user_referee where FIND_IN_SET(#{id},referee_relation)
+    </select>
+
+    <select id="selectChildCount" resultType="java.lang.Integer">
+        select count(id) from u_user_referee where referee_user_id = #{id}
+    </select>
+
+    <select id="selectChildIdList" resultType="java.lang.Long">
+        select user_id from u_user_referee where referee_user_id = #{id}
+    </select>
+
+    <select id="selectVipList" resultType="com.nft.cn.entity.UUserReferee">
+        SELECT * FROM u_user_referee WHERE user_id IN (SELECT user_id FROM u_user_base_info WHERE user_id IN (SELECT user_id FROM u_user_referee WHERE FIND_IN_SET(#{id},referee_relation)) AND (is_vip = 1 OR is_advanced_vip = 1))
+    </select>
+
+    <select id="selectBefore" resultType="com.nft.cn.entity.UUserReferee">
+        SELECT id, user_address, user_id, referee_user_id, referee_user_address, referee_num, income_status, create_time FROM u_user_referee WHERE `income_status` = 1 AND id &lt; 433564 AND id &gt; #{id} LIMIT 10000
+    </select>
+</mapper>

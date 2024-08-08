@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.OfficialWebsiteNewsMapper">
+
+    <select id="selectFirstNews" resultType="com.nft.cn.entity.OfficialWebsiteNews">
+        SELECT id, title_en, content_en_text, release_time FROM official_website_news WHERE type = 1 AND weight = (SELECT MAX(weight) FROM official_website_news WHERE `type` = 1) AND release_time &lt; NOW() ORDER BY release_time DESC, create_time DESC LIMIT 1
+    </select>
+
+    <select id="selectFirstNewsAndImg" resultType="com.nft.cn.entity.OfficialWebsiteNews">
+        SELECT id, title_en, content_en_text, content_en_img, release_time FROM official_website_news WHERE type = 1 AND weight = (SELECT MAX(weight) FROM official_website_news WHERE `type` = 1) AND release_time &lt; NOW() ORDER BY release_time DESC, create_time DESC LIMIT 1
+    </select>
+</mapper>

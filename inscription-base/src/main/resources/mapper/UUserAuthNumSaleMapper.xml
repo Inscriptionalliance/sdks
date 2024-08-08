@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.UUserAuthNumSaleMapper">
+
+    <delete id="removeAuth">
+        DELETE FROM u_user_auth_num_sale WHERE id IN	(SELECT t.id FROM (SELECT MAX(id) id, COUNT(user_address) aa, user_address FROM u_user_auth_num_sale GROUP BY user_address)  t WHERE t.aa > 1)
+    </delete>
+</mapper>

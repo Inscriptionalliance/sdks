@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.MintUserHoldMapper">
+
+    <select id="getMintRank" resultType="com.nft.cn.entity.MintRank">
+        SELECT t.* FROM (SELECT SUM(mint_num) mintNum, user_address userAddress FROM mint_user_hold GROUP BY user_address) t ORDER BY t.mintNum DESC
+    </select>
+
+    <delete id="removeHold">
+        DELETE FROM mint_user_hold WHERE id IN	(SELECT t.id FROM (SELECT MAX(id) id, COUNT(user_address) aa, user_address FROM mint_user_hold GROUP BY user_address)  t WHERE t.aa > 1)
+    </delete>
+</mapper>

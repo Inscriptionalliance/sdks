@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.MintUserPaidMapper">
+
+    <select id="countPartNum" resultType="java.lang.Integer">
+        select count(a.user_address) from (
+            select user_address from mint_user_paid
+            <where>
+                and phase = #{phase}
+                <if test="list != null and list.size() > 0">
+                    and user_address in
+                    <foreach collection="list" item="userAddress" open="(" separator="," close=")">
+                        #{userAddress}
+                    </foreach>
+                </if>
+            </where>
+            group by user_address
+        ) a
+    </select>
+
+    <select id="sumMintNum" resultType="java.math.BigDecimal">
+        SELECT sum(mint_num) mintNum FROM mint_user_paid
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="phase != null">
+                AND `phase` = #{phase}
+            </if>
+        </where>
+    </select>
+
+    <select id="sumTeamMintNum" resultType="java.math.BigDecimal">
+        SELECT SUM(mint_num) mintNum FROM mint_user_paid
+        <where>
+            <if test="userId != null">
+                AND user_id IN (select user_id from u_user_referee where FIND_IN_SET(#{userId},referee_relation))
+            </if>
+            <if test="phase != null">
+                AND `phase` = #{phase}
+            </if>
+        </where>
+    </select>
+
+    <select id="sumRefereeMintNum" resultType="java.math.BigDecimal">
+        SELECT SUM(mint_num) mintNum FROM mint_user_paid
+        <where>
+            <if test="userId != null">
+                AND referee_user_id IN (select user_id from u_user_referee where referee_user_id = #{userId})
+            </if>
+            <if test="phase != null">
+                AND `phase` = #{phase}
+            </if>
+        </where>
+    </select>
+
+    <select id="syncAchieve" resultType="com.nft.cn.entity.MintUserPaid">
+        SELECT * FROM mint_user_paid
+        <where>
+            and is_sync = 0
+            <if test="updateTime != null">
+                and update_time &gt;= #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectYesterdayCommunity" resultType="java.math.BigDecimal">
+        SELECT sum(mint_num) mint_num FROM mint_user_paid
+        WHERE user_id IN (select user_id from u_user_referee where FIND_IN_SET(#{userId},referee_relation))
+        AND user_id NOT IN (select user_id from u_user_referee where FIND_IN_SET(#{bigUserId},referee_relation))
+        AND user_id != #{bigUserId}
+        AND `phase` = #{phase}
+        AND DATE_FORMAT(update_time, '%Y-%m-%d') = #{now}
+    </select>
+
+    <select id="selectYesterdayReferee" resultType="java.math.BigDecimal">
+        SELECT sum(mint_num) mint_num FROM mint_user_paid
+        WHERE user_id IN (select user_id from u_user_referee where referee_user_id = #{userId})
+        AND `phase` = #{phase}
+        AND DATE_FORMAT(update_time, '%Y-%m-%d') = #{now}
+    </select>
+
+    <select id="selectYesterdayRefereeList" resultType="com.nft.cn.entity.MintUserPaid">
+        SELECT sum(mint_num) mint_num, user_address FROM mint_user_paid
+        WHERE user_id IN
+        <foreach collection="list" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+        AND `phase` = #{phase}
+        AND DATE_FORMAT(update_time, '%Y-%m-%d') = #{now}
+        GROUP BY user_address
+    </select>
+
+    <select id="selectYesterdayCommunityList" resultType="com.nft.cn.entity.MintUserPaid">
+        SELECT sum(mup.mint_num) mint_num, uu.uuserId user_id FROM (
+        <foreach collection="list" item="userId" open="" separator=" UNION ALL " close="">
+            select #{userId} uuserId, user_id from u_user_referee where FIND_IN_SET(#{userId},referee_relation)
+            UNION ALL
+            select #{userId} uuserId, #{userId} user_id
+        </foreach>
+        ) uu
+        LEFT JOIN mint_user_paid mup ON uu.user_id = mup.user_id
+        WHERE `phase` = #{phase}
+        AND DATE_FORMAT(mup.update_time, '%Y-%m-%d') = #{now}
+        GROUP BY uu.uuserId
+    </select>
+</mapper>

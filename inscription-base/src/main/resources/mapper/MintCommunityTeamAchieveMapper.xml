@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.MintCommunityTeamAchieveMapper">
+
+    <select id="getByUserId" resultType="com.nft.cn.entity.MintCommunityTeamAchieve">
+        select * from  mint_community_team_achieve where user_id = #{userId}
+    </select>
+
+    <select id="getAllSubordinate" resultType="com.nft.cn.entity.MintCommunityTeamAchieve">
+        select * from  mint_community_team_achieve where user_id in (select user_id from u_user_referee where FIND_IN_SET(#{userId},referee_relation)) and paid_mint_num &gt; 0
+    </select>
+
+    <select id="selectUserIdList" resultType="com.nft.cn.entity.MintCommunityTeamAchieve">
+
+        SELECT a.*,b.is_vip isVip,b.is_node_vip isNodeVip,b.is_advanced_vip isAdvancedVip FROM (SELECT * FROM mint_community_team_achieve WHERE user_id IN
+        (
+        select substring_index(substring_index(a.col,',',b.help_topic_id+1),',',-1) as id
+        from
+        (SELECT referee_relation col FROM u_user_referee WHERE user_id = #{userId}) as a
+        join
+        mysql.help_topic as b
+        on b.help_topic_id &lt; (char_length(a.col) - char_length(replace(a.col,',',''))+1)
+        )) a LEFT JOIN u_user_base_info b ON a.user_address = b.user_address ORDER BY user_id DESC
+    </select>
+
+    <select id="getRefereeList" resultType="com.nft.cn.entity.MintCommunityTeamAchieve">
+        select * from  mint_community_team_achieve where user_id in (select user_id from u_user_referee where referee_user_id = #{userId}) and paid_mint_num &gt; 0
+    </select>
+
+    <select id="getAllSubordinateCount" resultType="java.lang.Integer">
+        select count(id) from  mint_community_team_achieve where user_id in (select user_id from u_user_referee where FIND_IN_SET(#{userId},referee_relation)) and paid_mint_num &gt; 0
+    </select>
+
+    <select id="getRefereeListAll" resultType="com.nft.cn.entity.MintCommunityTeamAchieve">
+        select * from  mint_community_team_achieve where user_id in (select user_id from u_user_referee where referee_user_id = #{userId})
+    </select>
+
+    <select id="selectVipList" resultType="com.nft.cn.entity.MintCommunityTeamAchieve">
+        SELECT * FROM mint_community_team_achieve WHERE user_id IN (SELECT user_id FROM u_user_base_info WHERE user_id IN (SELECT user_id FROM u_user_referee WHERE FIND_IN_SET(#{userId},referee_relation)) AND (is_vip = 1 OR is_advanced_vip = 1));
+    </select>
+
+    <select id="selectVipAchieve" resultType="java.math.BigDecimal">
+        SELECT sum(team_paid_mint_num + paid_mint_num) FROM mint_community_team_achieve WHERE user_id IN (SELECT user_id FROM u_user_base_info WHERE user_id IN (SELECT user_id FROM u_user_referee WHERE FIND_IN_SET(#{userId},referee_relation)) AND (is_vip = 1 OR is_advanced_vip = 1));
+    </select>
+
+    <select id="selectChild" resultType="com.nft.cn.entity.MintCommunityTeamAchieve">
+        SELECT * FROM mint_community_team_achieve WHERE user_id IN (select user_id from u_user_referee where referee_user_id = #{userId})
+    </select>
+
+    <select id="sumByUserIdList" resultType="java.math.BigDecimal">
+        SELECT sum(team_paid_mint_num) FROM mint_community_team_achieve
+        <if test="list != null and list.size() > 0">
+            <where>
+                and user_id in
+                <foreach collection="list" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </where>
+        </if>
+    </select>
+
+    <select id="selectByUserIdList" resultType="com.nft.cn.entity.MintCommunityTeamAchieve">
+        SELECT * FROM mint_community_team_achieve
+        <if test="list != null and list.size() > 0">
+            <where>
+                and user_id in
+                <foreach collection="list" item="userId" open="(" separator="," close=")">
+                    #{userId}
+                </foreach>
+            </where>
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.MintRankCommunityMapper">
+
+    <select id="achieveAllListGtNumPage" resultType="com.nft.cn.entity.MintRankCommunity">
+        select * from (SELECT a.*, CAST((@i:=@i+1) as signed) rank
+        FROM (
+        SELECT (
+        <if test="phase != null and phase == 1">
+            mcta.team_paid_mint_num1 - maxUser.maxPaid
+            ) mint_num, mcta.user_id, mcta.user_address FROM
+            (
+            SELECT IFNULL(MAX(
+            ncta.paid_mint_num1 + ncta.team_paid_mint_num1
+        </if>
+        <if test="phase != null and phase == 2">
+            mcta.team_paid_mint_num2 - maxUser.maxPaid
+            ) mint_num, mcta.user_id, mcta.user_address FROM
+            (
+            SELECT IFNULL(MAX(
+            ncta.paid_mint_num2 + ncta.team_paid_mint_num2
+        </if>
+        <if test="phase != null and phase == 3">
+            mcta.team_paid_mint_num3 - maxUser.maxPaid
+            ) mint_num, mcta.user_id, mcta.user_address FROM
+            (
+            SELECT IFNULL(MAX(
+            ncta.paid_mint_num3 + ncta.team_paid_mint_num3
+        </if>
+        <if test="phase != null and phase == 4">
+            mcta.team_paid_mint_num4 - maxUser.maxPaid
+            ) mint_num, mcta.user_id, mcta.user_address FROM
+            (
+            SELECT IFNULL(MAX(
+            ncta.paid_mint_num4 + ncta.team_paid_mint_num4
+        </if>
+        ), 0.000000) maxPaid, vvu.vuserId FROM
+        (
+        SELECT vipUser.user_id vuserId, uur.user_id cuserId FROM mint_community_paid_achieve vipUser  LEFT JOIN u_user_referee uur ON vipUser.user_id = uur.referee_user_id WHERE vipUser.team_paid_mint_num > 0
+        ) vvu LEFT JOIN mint_community_paid_achieve ncta ON vvu.cuserId = ncta.user_id  GROUP BY vvu.vuserId
+        ) maxUser LEFT JOIN mint_community_paid_achieve mcta ON mcta.user_id = maxUser.vuserId  ORDER BY mint_num DESC
+        ) a, (SELECT @i:=0) b) t
+        <where>
+            and t.mint_num &gt; #{achieve}
+            <if test="list != null and list.size() > 0">
+                and t.user_address IN
+                <foreach collection="list" item="userAddress" open="(" separator="," close=")">
+                    #{userAddress}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+</mapper>

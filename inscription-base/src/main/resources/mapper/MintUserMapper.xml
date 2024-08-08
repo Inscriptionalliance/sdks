@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.MintUserMapper">
+
+    <select id="getMintRankPage" resultType="com.nft.cn.entity.MintUser">
+        SELECT t.* FROM (SELECT SUM(mint_num) mintNum, user_address userAddress, max(update_time) updateTime FROM mint_user WHERE `status` = 4 GROUP BY user_address) as t ORDER BY t.mintNum DESC, t.updateTime
+    </select>
+
+    <select id="getMintRank" resultType="com.nft.cn.entity.MintUser">
+        SELECT t.* FROM (SELECT SUM(mint_num) mintNum, user_address userAddress, max(update_time) updateTime FROM mint_user WHERE `status` = 4 GROUP BY user_address) as t ORDER BY t.mintNum DESC, t.updateTime
+    </select>
+
+
+
+    <select id="sumMintNum" resultType="java.math.BigDecimal">
+        SELECT sum(mint_num) mintNum FROM mint_user
+        <where>
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+            <if test="status != null">
+                AND `status` = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="sumTeamMintNum" resultType="java.math.BigDecimal">
+        SELECT SUM(mint_num) mintNum FROM mint_user
+        <where>
+            <if test="userId != null">
+                AND user_id IN (select user_id from u_user_referee where FIND_IN_SET(#{userId},referee_relation))
+            </if>
+            <if test="status != null">
+                AND `status` = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="syncAchieve" resultType="com.nft.cn.entity.MintUser">
+        SELECT * FROM mint_user
+        <where>
+            and `status` = 4 and is_sync = 0
+            <if test="updateTime != null">
+                and update_time &gt;= #{updateTime}
+            </if>
+        </where>
+        <if test="limit != null">
+            limit #{limit}
+        </if>
+    </select>
+
+    <select id="selectAchieveMint" resultType="java.math.BigDecimal">
+        SELECT SUM(mint_ticket) - SUM(free_ticket) FROM mint_user WHERE user_id  IN (SELECT user_id FROM u_user_referee WHERE FIND_IN_SET(#{userId},referee_relation)) AND `status` = 4
+    </select>
+
+    <select id="sumTeamMintUser" resultType="com.nft.cn.entity.MintUser">
+        SELECT SUM(mint_ticket) mint_ticket, SUM(free_ticket) free_ticket FROM mint_user
+        <where>
+            <if test="userId != null">
+                AND user_id IN (select user_id from u_user_referee where FIND_IN_SET(#{userId},referee_relation))
+            </if>
+            <if test="status != null">
+                AND `status` = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectRefereeMint" resultType="com.nft.cn.entity.MintUser">
+        SELECT SUM(mint_ticket) mint_ticket, SUM(free_ticket) free_ticket FROM mint_user
+        <where>
+            AND `status` = 4
+            <if test="userId != null">
+                AND user_id IN (select user_id from u_user_referee where referee_user_id = #{userId})
+            </if>
+        </where>
+    </select>
+
+    <select id="sumMint" resultType="com.nft.cn.entity.MintUser">
+        SELECT SUM(mint_ticket) mint_ticket, SUM(free_ticket) free_ticket FROM mint_user
+        <where>
+            AND `status` = 4
+            <if test="userId != null">
+                AND user_id = #{userId}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectAchieveChildMint" resultType="com.nft.cn.entity.MintUser">
+        <if test="list != null and list.size() > 0">
+            <foreach collection="list" item="userId" open="" separator=" UNION ALL " close="">
+                SELECT a.referee_id user_id,SUM(mint_ticket) mint_ticket, SUM(free_ticket) free_ticket FROM (SELECT user_id, #{userId} referee_id FROM u_user_referee WHERE FIND_IN_SET(#{userId},referee_relation)) a LEFT JOIN mint_user mu ON a.user_id = mu.user_id WHERE mu.`status` = 4 GROUP BY a.referee_id
+            </foreach>
+        </if>
+    </select>
+
+    <select id="selectMintRankPage" resultType="com.nft.cn.entity.MintRankUser">
+        SELECT t.* FROM (SELECT a.user_address, a.mint_num, CAST((@i:=@i+1) as signed) rank FROM mint_community_team_achieve a, (SELECT @i:=0) b WHERE a.mint_num > 0 ORDER BY a.mint_num DESC, a.id) t
+        <where>
+            <if test="userAddress != null and userAddress != ''">
+                and t.user_address = #{userAddress}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectYesterdayCommunity" resultType="java.math.BigDecimal">
+        SELECT sum(mint_ticket - free_ticket) * 10000 mint_num FROM mint_user
+        WHERE user_id IN (select user_id from u_user_referee where FIND_IN_SET(#{userId},referee_relation))
+        AND user_id NOT IN (select user_id from u_user_referee where FIND_IN_SET(#{bigUserId},referee_relation))
+        AND user_id != #{bigUserId}
+        AND amount > 0
+        AND `status` = 4
+        AND DATE_FORMAT(update_time, '%Y-%m-%d') = #{now}
+    </select>
+
+    <select id="selectYesterdayReferee" resultType="java.math.BigDecimal">
+        SELECT sum(mint_ticket - free_ticket) * 10000 mint_num FROM mint_user
+        WHERE user_id IN (select user_id from u_user_referee where referee_user_id = #{userId})
+        AND amount > 0
+        AND `status` = 4
+        AND DATE_FORMAT(update_time, '%Y-%m-%d') = #{now}
+    </select>
+</mapper>

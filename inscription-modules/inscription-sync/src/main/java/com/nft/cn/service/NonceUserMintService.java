@@ -1,0 +1,13 @@
+package com.nft.cn.service;
+
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.nft.cn.entity.NonceUserMint;
+
+public interface NonceUserMintService extends IService<NonceUserMint> {
+
+    NonceUserMint getByUserAddress(String userAddress);
+
+
+    void updateNonce(String userAddress);
+
+}

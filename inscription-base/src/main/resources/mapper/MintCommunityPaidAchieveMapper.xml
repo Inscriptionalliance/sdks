@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.MintCommunityPaidAchieveMapper">
+
+    <select id="getByUserId" resultType="com.nft.cn.entity.MintCommunityPaidAchieve">
+        select * from  mint_community_paid_achieve where user_id = #{userId}
+    </select>
+
+    <select id="selectChild" resultType="com.nft.cn.entity.MintCommunityPaidAchieve">
+        SELECT * FROM mint_community_paid_achieve WHERE user_id IN (select user_id from u_user_referee where referee_user_id = #{userId})
+    </select>
+
+    <select id="getAllSubordinateCount" resultType="java.lang.Integer">
+        select count(id) from  mint_community_paid_achieve
+        <where>
+            user_id in (select user_id from u_user_referee where FIND_IN_SET(#{userId},referee_relation))
+            <if test="phase != null and phase == 1">
+                and paid_mint_num1 &gt; 0
+            </if>
+            <if test="phase != null and phase == 2">
+                and paid_mint_num2 &gt; 0
+            </if>
+            <if test="phase != null and phase == 3">
+                and paid_mint_num3 &gt; 0
+            </if>
+            <if test="phase != null and phase == 4">
+                and paid_mint_num4 &gt; 0
+            </if>
+        </where>
+    </select>
+</mapper>

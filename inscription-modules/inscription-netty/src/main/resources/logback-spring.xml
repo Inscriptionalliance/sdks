@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="processName" value="kc-user"/>
+    <property name="logDir" value="logs"/>
+
+    <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+        <!--<Encoding>UTF-8</Encoding>-->
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%date [%thread] %-5level %logger{50}:%L - %msg%n</pattern>
+        </layout>
+    </appender>
+    <appender name="logfile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--<Encoding>UTF-8</Encoding>-->
+        <File>${logDir}/ark-user.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>${logDir}/${processName}.%d{yyyy-MM-dd}.log.gz</FileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>%date [%thread] %-5level %logger{50}:%L - %msg%n</pattern>
+        </layout>
+    </appender>
+
+
+    <logger name="com.nft.cn">
+        <level value="INFO"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="logfile"/>
+        <appender-ref ref="stdout"/>
+    </root>
+</configuration>

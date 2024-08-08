@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.nft.cn.dao.UUserBaseInfoMapper">
+
+    <select id="selecttest1" parameterType="java.lang.Long" resultType="com.nft.cn.entity.UUserBaseInfo">
+        SELECT SUM(free_ticket) free_ticket, SUM(mint_ticket) mint_ticket FROM u_user_base_info WHERE user_address IN (select user_address from u_user_referee where FIND_IN_SET(#{userId}, referee_relation))
+    </select>
+
+    <select id="selectCounttest1" parameterType="java.lang.Long" resultType="com.nft.cn.entity.UUserBaseInfo">
+        select COUNT(id) current_page from u_user_referee where FIND_IN_SET(#{userId},referee_relation)
+    </select>
+
+    <select id="getVipUserList" resultType="com.nft.cn.entity.UUserBaseInfo">
+        SELECT user_id userId FROM u_user_base_info WHERE user_id IN (SELECT user_id FROM u_user_referee WHERE FIND_IN_SET(#{userId},referee_relation)) AND (is_vip = 1 OR is_advanced_vip = 1)
+    </select>
+</mapper>
